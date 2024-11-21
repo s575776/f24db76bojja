@@ -1,0 +1,32 @@
+extends layout
+
+block content
+  h1.text-center.text-primary.mt-3= title
+
+  if (toShow == null)
+    h2.text-center.text-muted No details available for this Fossils
+  else
+    - let id = toShow._id
+    - let fossilName = toShow.site_name
+    - let location = toShow.location
+    - let age = toShow.year_established
+
+    div.container.mt-4
+      div.card.shadow
+        div.card-header.bg-info.text-white
+          h3 Fossil Details
+        div.card-body
+          div.mb-3
+            strong ID:
+            span.ml-2 #{siteId}
+          div.mb-3
+            strong Fossil Name:
+            span.ml-2 #{fossilName}
+          div.mb-3
+            strong Location:
+            span.ml-2 #{location}
+          div.mb-3
+            strong Age:
+            span.ml-2 #{age}
+        div.card-footer.text-center
+          a.btn.btn-secondary(href='/fossildetails') Back to List

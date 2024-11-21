@@ -1,0 +1,48 @@
+[9:47 PM, 11/20/2024] Koushik ACS: extends layout
+
+block content
+    h1= title
+    - let siteid = toShow._id
+    - let sitename = toShow.site_name
+    - let location = toShow.location
+    - let year = toShow.year_established
+
+    div.row(class='mb-2')
+        div.mr-1 ID is:
+        div #{siteid}
+
+    // Prepare the form for updating the heritage site
+    - let actionid = "/resource/heritageSites/" + siteid
+    form(id='HeritageSiteForm', action=actionid, method="PUT")
+        div.form-group
+            label(for='site_name') Heritage Site Name
+            input#site_name(type='text', name='site_name', value=sitename)
+
+        div.form-group
+            label(for='location') Location
+            input#location(type='text', name='location', value=location)
+
+        div.form-group
+            label(for='year_established') Year Established
+            input#year_established(type='number', name='year_established', value=year)
+
+        input(type="submit")
+
+    // Client-side script to intercept form submission
+    script.
+        document.forms['HeritageSiteForm'].addEventListener('submit', (event) => {
+            event.preventDefault();
+            // Show user that form is being submitted
+            fetch(event.target.action, {
+                method: 'PUT',
+                body: new URLSearchParams(new FormData(event.target)) // Form data
+            }).then((resp) => {
+                return resp.json(); // Expecting a JSON response
+            }).then((body) => {
+                alert("Update succeeded");
+                // Optionally handle response body
+            }).catch((error) => {
+                alert("Update failed " + error);
+                // Handle error
+            });
+        });

@@ -1,0 +1,57 @@
+extends layout
+
+block content
+  h1= title
+
+  form(id='FossilForm', action='/resource/fossils', method='POST')
+    div.form-group
+      label(for='name') Fossil Name
+      input#name.form-control(type='text', name='name', required)
+
+    div.form-group
+      label(for='age') Age
+      input#age.form-control(type='text', name='age', required)
+      p.text-muted Please provide the fossil's age.
+
+    div.form-group
+      label(for='location') Location
+      input#location.form-control(type='text', name='location', required)
+      p.text-muted Please provide the location where the fossil was found.
+
+    input.btn.btn-primary(type='submit', value='Create Fossil')
+    button.btn.btn-secondary(type='reset') Reset
+
+  // Displaying error/success messages (optional)
+  if message
+    p(class='alert' + (message.type === 'error' ? ' alert-danger' : ' alert-success'))
+      = message.text
+
+  // Script for handling form submission
+  script.
+    document.forms['FossilForm'].addEventListener('submit', (event) => {
+      event.preventDefault(); // Prevent default form submission
+      const form = event.target;
+      const formData = new FormData(form);
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(formData) // Serialize form data
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          alert("Fossil created successfully!");
+          form.reset(); // Reset the form after successful submission
+        })
+        .catch((error) => {
+          alert("Failed to create fossil. Error: " + error.message);
+          console.error("Submission error:", error);
+        });
+    });

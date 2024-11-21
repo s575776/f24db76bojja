@@ -1,45 +1,104 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+// app.js
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+require('dotenv').config();
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var fossilsRouter = require('./routes/fossils');
-var gridRouter = require('./routes/grid');  // Added the grid route
-var pickRouter = require('./routes/pick'); // Added the pick route for random item selection
+const connectionString = process.env.MONGO_CON;
 
-var app = express();
+const mongoose = require('mongoose');
 
-// view engine setup
+mongoose.connect(connectionString);
+
+var db = mongoose.connection;
+
+// Bind connection to error event
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.once("open", function(){
+  console.log("Connection to DB succeeded");
+});
+
+// Route imports
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const gridRouter = require('./routes/grid');
+const pickRouter = require('./routes/pick');
+const resourceRouter = require('./routes/resource');
+const fossilsRouter = require('./routes/fossils');  // Updated route for fossils
+
+// Schema definition
+const fossilSchema = new mongoose.Schema({
+  name: String,
+  age: String,
+  location: String
+});
+
+const Fossil = mongoose.models.Fossil || mongoose.model('Fossil', fossilSchema);
+
+// Database seeding function
+async function recreateDB() {
+  await Fossil.deleteMany();
+  
+  let instance1 = new Fossil({ name: 'Tyrannosaurus', age: '68 million years', location: 'North America' });
+  let instance2 = new Fossil({ name: 'Triceratops', age: '68 million years', location: 'North America' });
+  let instance3 = new Fossil({ name: 'Stegosaurus', age: '155 million years', location: 'North America' });
+
+  await instance1.save().then(doc => {
+    console.log("First fossil saved:", doc);
+  }).catch(err => {
+    console.error(err);
+  });
+
+  await instance2.save().then(doc => {
+    console.log("Second fossil saved:", doc);
+  }).catch(err => {
+    console.error(err);
+  });
+
+  await instance3.save().then(doc => {
+    console.log("Third fossil saved:", doc);
+  }).catch(err => {
+    console.error(err);
+  });
+}
+
+let reseed = true;
+if (reseed) {
+  recreateDB();
+}
+
+// Express app setup
+const app = express();
+
+// View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+// Middleware
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/fossils', fossilsRouter);
-app.use('/grid', gridRouter); // Added the grid route
-app.use('/pick', pickRouter); // Added the randomitem route for the random item selection page
+app.use('/fossils', fossilsRouter);  // Updated route for fossils
+app.use('/grid', gridRouter);
+app.use('/selector', pickRouter);
+app.use('/resource', resourceRouter);
 
-// catch 404 and forward to error handler
+// Error handling
 app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
   res.status(err.status || 500);
   res.render('error');
 });
