@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1 A Random Item
+
+  // Define an array of image names (Ensure the images are in public/images)
+  - var image_names = ['sethu.jpg', 'dhanush.jpg', 'arjun.jpg', 'suriya.jpg', 'kar.jpg']
+
+  // Loop 3 times to display 3 random images
+  - for (var i = 0; i < 3; i++)
+    - var randomIndex = Math.floor(Math.random() * 5)
+    img(src=`/images/${image_names[randomIndex]}`, alt=`Random image ${i+1}`, height="300", width="300")

@@ -1,0 +1,17 @@
+extends layout
+
+block content
+  h1 Fossils Search Results
+
+  .container-fluid
+    .row
+      each fossil, index in fossils
+        div(class="col-sm-4", onclick=`buy(${index})`)
+          h3 #{fossil.name}
+          p Age: #{fossil.age} million years
+          p Location: #{fossil.location}
+
+      script.
+        function buy(itemNum){
+          alert(`You purchased item ${itemNum + 1}`);
+        }
