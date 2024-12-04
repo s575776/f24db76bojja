@@ -1,25 +1,41 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-var api_controller = require('../controllers/api');
-var fossil_controller = require('../controllers/fossils');  // Corrected to use fossil controller
+// Middleware to verify user authentication
+const secured = (req, res, next) => {
+    if (req.user) {
+        return next();
+    }
+    res.redirect("/login");
+};
 
-// Root route for API documentation or overview
+// Import the necessary controller modules
+const api_controller = require('../controllers/api');
+const fossilController = require('../controllers/fossil');
+
+// Root API route handler
 router.get('/', api_controller.api);
 
-// Create a new fossil
-router.post('/fossils', fossil_controller.fossil_create_post);  // Corrected route for fossils
+// Routes for fossil-related API operations
+router.post('/fossils', fossilController.fossil_create_post);
+router.get('/fossils', fossilController.fossil_list);
+router.get('/fossils/all', fossilController.fossil_view_all_Page);
 
-// Delete a fossil by ID
-router.delete('/fossils/:id', fossil_controller.fossil_delete);  // Corrected route for fossils
+// Route for rendering the fossil creation page
+router.get('/fossils/create', secured, fossilController.fossil_create_Page);
 
-// Update a fossil by ID
-router.put('/fossils/:id', fossil_controller.fossil_update_put);  // Corrected route for fossils
+// Route for rendering the fossil deletion page
+router.get('/fossils/delete', secured, fossilController.fossil_delete_Page);
 
-// Get details of a specific fossil by ID
-router.get('/fossils/:id', fossil_controller.fossil_detail);  // Corrected route for fossils
+// Route for displaying details of a specific fossil using a query parameter
+router.get('/fossils/detail', fossilController.fossil_view_one_Page);
 
-// Get a list of all fossils
-router.get('/fossils', fossil_controller.fossil_list);  // Corrected route for fossils
+// Routes for operations on a specific fossil by ID
+router.get('/fossils/:id', fossilController.fossil_detail);
+router.put('/fossils/:id', fossilController.fossil_update_put);
+router.delete('/fossils/:id', fossilController.fossil_delete);
+
+// Route for rendering the page to update a fossil
+router.get('/update', secured, fossilController.fossil_update_Page);
 
 module.exports = router;
